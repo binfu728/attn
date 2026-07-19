@@ -1,1 +1,4 @@
 sk-cp-fXRm1Nwi-0jke-0X3121LsA_iBfRnIug7nyxh_cvgiZ6ts2Q8VbGCyS0qEAdJdGt84RR_aDk7XW3VCMxGHMy23GQBqfOvlGqs2jt8gqQNSNmGHwAE2n9Jsg
+
+wget https://github.com/Kilo-Org/kilocode/releases/download/v7.4.11/kilo-vscode-linux-x64.vsix
+curl -L -O https://github.com/Kilo-Org/kilocode/releases/download/v7.4.11/kilo-vscode-linux-x64.vsix
