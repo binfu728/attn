@@ -70,6 +70,14 @@ DINOv3 + Mask2Former 较 UNet + FCN 提升约 +2.39 mIoU，验证了冻结 DINOv
 
 任务头方面：端到端与融合实验采用 **Mask2Former**（`num_queries=50`，5 类，见 `fusion_potsdam/configs/dinov3_m2f_9999.py`）；UNet 基线采用 FCN；线性探针采用 **`OlmoEarthPatchLinearHead`**（patch_size=4，将 128×128 token 展开为 512×512 像素 logits，骨干为恒等直通、不训练）。所有实验均遵循冻结骨干的训练范式：fusion_potsdam 配置显式设定 `freeze_backbone=True`、`finetune_vit=False`，并通过 `paramwise_cfg` 对 `backbone.backbone` 设定 `lr_mult=0.0`；线性探针更仅训练线性头。
 
+**Potsdam UNet 基线（`potsdam_unet`）。** 作为 Potsdam 数据集上从头训练的卷积基线，该部分涉及 `/mnt/qh2-nas3/00-model/00-fb/potsdam_unet/`（配置 `configs/unet_potsdam.py`）。骨干采用 mmseg 内置 **UNet**（`in_channels=3`，`base_channels=64`，5 级下采样，`with_cp=False`），任务头为 **FCN**——主头接最高分辨率输出层 `in_index=4`，并设 `in_index=3`、`in_channels=128` 的辅助 FCN 头用于深度监督（`loss_weight=0.4`）。训练设置：`img_size=512`，类别数 5（`ignore_index=255`），AdamW（lr=1e-3，weight_decay=0.01，clip_grad max_norm=0.01）配合 PolyLR（eta_min=1e-4，power=0.9）调度，共 40000 迭代、每 2000 迭代验证、训练 batch=8。与 Potsdam 上基于 DINOv3 的实验不同，UNet 无预训练骨干、全部参数可训练，不存在骨干冻结机制。
+
+| 配置 | 骨干 | 任务头 | Best mIoU (%) | @ iter |
+|---|---|---|---|---|
+| `unet_potsdam.py` | UNet（5 stage，base_ch=64） | FCN + 辅助 FCN | 84.85 | 38000（aAcc 91.22） |
+
+该卷积基线取得 84.85 mIoU，将作为后续 DINOv3 / 融合实验（表 1）的对照基准。结果显示，从头训练的 UNet 较冻结 DINOv3 预训练骨干的最优配置（89.00 mIoU）低约 4.2 mIoU，印证了预训练骨干的明显优势。
+
 **表 1 — DINOv3 官方权重与自有权重的 mIoU 与 mF1。** 下表为端到端/融合实验汇总（来源：`fusion_potsdam/RESULTS.md`），按 mIoU 降序排列。`HR` 表示纯 DINOv3 骨干，`fusion` 表示叠加 OLMoEarth 上下文的融合骨干。
 
 | # | 实验 | 骨干 | 预训练 | Context | 对比损失 | mIoU | mFscore |
@@ -89,7 +97,7 @@ DINOv3 + Mask2Former 较 UNet + FCN 提升约 +2.39 mIoU，验证了冻结 DINOv
 | 13 | fusion 23999 | fusion | zhejiang | mask_token | Yes | 87.54 | 93.24 |
 | 14 | DINOv3 SAT-493M (sat) | HR | SAT RS | — | — | 86.85 | 92.85 |
 
-作为参照，UNet + FCN 基线在 Potsdam 上的最佳 mIoU 为 84.85（来源：`potsdam_unet/work_dirs/unet_potsdam/.../scalars.json`），显著低于上述 DINOv3 实验。结果显示：官方 ImageNet LVD-1689M 预训练最优（89.00）；浙江遥感 SSL 权重（88.43–88.49）显著优于官方遥感 SAT-493M（86.85），差距约 1.6 mIoU；纯 HR 骨干始终优于融合骨干（差距约 0.5–0.9 mIoU）；较早的检查点（9999.pth）在多数实验中优于后期检查点。
+结果（来源：`fusion_potsdam/RESULTS.md`）显示：官方 ImageNet LVD-1689M 预训练最优（89.00）；浙江遥感 SSL 权重（88.43–88.49）显著优于官方遥感 SAT-493M（86.85），差距约 1.6 mIoU；纯 HR 骨干始终优于融合骨干（差距约 0.5–0.9 mIoU）；较早的检查点（9999.pth）在多数实验中优于后期检查点。
 
 **表 2 — OLMoEarth 三种权重在不同学习率与 tile 配置下的 50 epoch 结果（best mIoU %）。** 在线性探针设定下，需特别指出：由于线性头对冻结特征构成凸优化问题，存在全局最优解，因此**设置不同学习率并无必要性**——学习率（1e-1 至 1e-4）仅影响收敛速度，而非最终可达精度上界。下表给出三套特征在各 tile 配置下的最优值（括号标注对应最优学习率），其中 size 4 / 256 / 512 对应 `tile4_patch4` / `tile256_patch4_50_overlap` / `tile512_patch4`。
 
