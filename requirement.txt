@@ -1,0 +1,16 @@
+我希望你现在做一个总结性质的文章，要求是清晰明确，文字风格同文章发表一致，其中包含/mnt/ht2_nas2/00-model/00-fb/olmo_test/olmoearth_inference_v2_1/，/mnt/ht2-nas2/00-model/00-fb/mmseg_dino/，/mnt/qh2-nas3/00-model/00-fb/fusion_potsdam/，/mnt/qh2-nas3/00-model/00-fb/mmseg_dino_agri/，/mnt/qh2-nas3/00-model/00-fb/mmseg_unet/，/mnt/qh2-nas3/00-model/00-fb/potsdam_lp/，/mnt/qh2-nas3/00-model/00-fb/potsdam_unet/，/mnt/qh2-nas3/00-model/00-fb/visualise/，/mnt/qh2-nas3/00-model/00-fb/fusion_dino/，/mnt/qh2-nas3/00-model/00-fb/mmseg_dino_infer/的内容
+其中第一部分写出目前涉及到的数据集，以及他们的类型：PASTIS，Potsdam，SVDT，其中每一种总结为分辨率、谱段、时相、模态。例如PASTIS是基于sentinel2的10m数据集，包含十个波段和n个时间，单模态（光学）
+
+第二部分分别写出在每一种数据集上展开的测试：
+其中在PASTIS数据集上的测试包含/mnt/ht2-nas2/00-model/00-fb/mmseg_dino/，其中不同的版本分别对应为单时相、多波段、多波段多时相（时序中值）、多波段多时相+attn等，请你阅读代码。这个部分中分为两个部分去写：1.写一段综述性的文字，首先介绍这个部分涉及的文件夹有哪些，然后写该数据集上我们进行了多时相（对应的config名称）、多波段多时相（对应的config名称）的方式，最后写出涉及的任务头有哪些，以及全参冻结的方式训练（尽管写了unfreeze_backbone，但是对应的dinov3 adapter代码依旧冻结了backbone，这是个无效参数，请验证）。2.这个部分写出一个表格明确记录每种测试后的mIoU的数值。
+其中在SVDT数据集上的测试包含/mnt/qh2-nas3/00-model/00-fb/mmseg_unet/，/mnt/qh2-nas3/00-model/00-fb/mmseg_dino_agri/，这个部分中分为两个部分去写：1.写一段综述性的文字，首先介绍这个部分涉及的文件夹有哪些，然后写该数据集上我们进行了哪些任务头的测试，以及全参冻结的方式训练（尽管写了unfreeze_backbone，但是对应的dinov3 adapter代码依旧冻结了backbone，这是个无效参数，请验证）。2.这个部分写出一个表格明确记录每种测试后的mIoU的数值。
+其中在Potsdam数据集上的测试包含/mnt/qh2-nas3/00-model/00-fb/fusion_potsdam/，/mnt/qh2-nas3/00-model/00-fb/potsdam_lp/，/mnt/qh2-nas3/00-model/00-fb/potsdam_unet/。这个部分分为两个部分去写：1.写一段综述性的文字，首先介绍我们使用了三种权重进行了推理，dinov3(位置)，自有权重（位置，需要指出涉及很多不同epoch的ckpt），以及olmoearth的权重（位置，这个也涉及了不同版本），最后写出涉及的任务头有哪些，以及全参冻结的方式训练。2.接下来写出三个表格，其中第一个表格总结dinov3以及自有权重的mIoU和mF1的结果，第二个表格总结不同olmoearth权重在不同学习率下50个epoch的结果，同时指出lp下设置不同学习率的不必要性，因为线性头会有全局最优，然后第三个表格只给两个权重训练600 epoch的结果对比。
+
+第三部分写出可视化的方式都有哪些：
+其中涉及的文件夹有：/mnt/qh2-nas3/00-model/00-fb/visualise/，/mnt/qh2-nas3/00-model/00-fb/fusion_dino/。其中分成4段，分别介绍4种方式对应的场景，文字要有理有据，且严谨：1.PCA，这个适用于结果的降维，从而可视化结果塌缩的问题。2.cosine similarity这个适合查看不同层的语义相似度以及融合情况，同时查看塌缩问题。3.heatmap，通过对比所有的class token，从而查看不同图像输出后的全局向量塌缩问题。4.全局向量矩阵的SVD，同样是基于singular value的归一化后的斜率，查看向量塌缩的问题。
+
+第四部分写出其余的工作内容：
+其中涉及的文件夹有：/mnt/qh2-nas3/00-model/00-fb/mmseg_dino_infer/以及/mnt/ht2_nas2/00-model/00-fb/olmo_test/olmoearth_inference_v2_1/
+其中/mnt/qh2-nas3/00-model/00-fb/mmseg_dino_infer/做的是使用mask2former仅基于pytorch进行推理，/mnt/ht2_nas2/00-model/00-fb/olmo_test/olmoearth_inference_v2_1/做的是简化olmoearth的推理步骤
+
+这是一个总的总结文档，在这个完成的下一个阶段我希望你在当前文件夹下新建一个文件夹，叫summerise_per_project，下面加入以上文件夹的细致说明，详细说明每个文件夹的代码如何运行，每个文件什么意思。但目前不要做。
